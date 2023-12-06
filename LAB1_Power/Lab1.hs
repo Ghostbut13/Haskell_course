@@ -1,0 +1,71 @@
+import Test.QuickCheck
+
+--original power
+power :: Integer -> Integer -> Integer 
+power n k 
+  | k < 0 = error "power: negative argument" 
+power n 0 = 1 
+power n k = n * power n (k-1)
+----------------
+
+--Part A
+stepsPower :: Num a => p -> a -> a
+stepsPower n k = k+1
+
+--Part B
+power1 :: (Ord a1, Num a2, Num a1, Enum a1) => a2 -> a1 -> a2
+power1 n k
+  | k < 0 =  error "power1: negative argument"
+power1 n 0 = 1
+power1 n k = product ks where
+  ks = [n | k <- [1..k]]
+
+--Part C
+
+power2 :: (Num a2, Integral a1) => a2 -> a1 -> a2
+power2 n 0 = 1
+power2 n k
+  | k < 0  = error "power2: negative argument"
+  | even k = power2 n (div k 2) * power2 n (div k 2)
+  | odd k  = n*power2 n (k-1) 
+
+--Part D
+--test kernel cases
+{-
+....
+n,k=-1,-1*
+n,k=-1, 0**
+n,k=-1, 1
+n,k= 0,-1*
+n,k= 0, 0**
+n,k= 0, 1
+n,k= 1,-1*
+n,k= 1, 0**
+n,k= 1, 1
+n,k= 1, 2
+n,k= 2, 2
+n,k= 2, 3
+....
+-}
+-- *      : Out of active range becouse k<0. We need to check this case.
+-- **     ：k=0 is base case of power , we also need to check it.
+-- others : Normal cases
+
+
+--valid test_vectors (k>=0)
+test_vectors_n = [-2..4]
+test_vectors_k = [0..4]
+
+--check function
+prop_powers :: Integer -> Integer -> Bool
+prop_powers n k = power n k == power1 n k && power n k == power2 n k
+
+--test fuction
+powertest :: [Integer] -> [Integer] -> [Bool]
+powertest test_vectors_n test_vectors_k = [prop_powers n k 
+  | n <- test_vectors_n, k <- test_vectors_k]
+
+--perfect check function
+prop_powers' :: Integer -> Integer -> Bool
+prop_powers' n k = prop_powers n k'
+  where k' = abs k
